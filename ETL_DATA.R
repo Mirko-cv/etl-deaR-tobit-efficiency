@@ -1,7 +1,9 @@
 library(dplyr)
 library(readxl)
+library(stringr)
 
-ruta <- "D:\\GITHUB\\DEA\\todas_las_tablas.xlsx"
+
+ruta <- "tables_bench.xlsx"
 
 df<-purrr::map_dfr(excel_sheets(ruta),
                ~read_excel(ruta, sheet = .x, range = "A1:G18",col_names=F) %>%
@@ -23,8 +25,7 @@ df <- as.data.frame(
 # proceso de ETL #
 ##################
 
-#obtenemos el nombre de la empresa
-library(stringr)
+#obtenemos el nombre de la empresa (EPS)
 
 df1 <- df %>% # quitamos espacios de mas y conservamos el nombre de la EPS
   mutate(`...1` = str_replace_all(`...1`, "(.)\\1+", "\\1")) %>% 
@@ -48,10 +49,9 @@ df1 <- df %>% # quitamos espacios de mas y conservamos el nombre de la EPS
       )
     )
   ) %>% 
-  tidyr::fill(EPS, .direction = "down") # rellenamos hacia abajo (con el nombre de la ep)
-# con esto tendremos un dataframe fortmato largo
+  tidyr::fill(EPS, .direction = "down") # rellenamos hacia abajo (con el nombre de la EPS)
   
-#validacion 
+#validacion que todas las EPS tengan el mismo número de datos
 #df1 %>% select(EPS,1,2) %>% filter(grepl("^(RE|TIPO|RAT|N°|POBLAC|GRU|NRO)",`...1` ) ) %>% select(EPS) %>% table() %>% sort()
  
 
@@ -73,9 +73,10 @@ df_v2<- df1 %>% select(EPS,5,7) %>%
   tidyr::pivot_wider(id_cols = EPS,names_from =`...5`,values_from = `...7` ) %>% 
   mutate(across(-1, ~ as.numeric(as.character(.))))
 
-## join
+## join y exportar
+
 
 df_final<-df_v1 %>% inner_join(df_v2,by="EPS")
+openxlsx::write.xlsx(df_final,"data_EPS_clean.xlsx")
 
-openxlsx::write.xlsx(df_final,"D:\\GITHUB\\DEA\\data_EPS_final.xlsx")
 
