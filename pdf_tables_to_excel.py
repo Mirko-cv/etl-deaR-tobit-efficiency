@@ -99,6 +99,7 @@ def extract_eps_tables(pdf_path, excel_path):
 # Uso principal
 if __name__ == "__main__":
     pdf_path = r"data_benchmarking.pdf"  # Cambia esto por tu archivo
-    excel_path = r"data_benchmarking_2024.xlsx"
+    excel_path = r"tables_bench.xlsx"
     
+
     extract_eps_tables(pdf_path, excel_path)
